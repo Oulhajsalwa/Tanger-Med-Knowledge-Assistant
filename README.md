@@ -56,7 +56,7 @@ manuelle rend difficile :
 
 ```mermaid
 flowchart TD
-    subgraph IN["📥 INGESTION (hors ligne)"]
+    subgraph IN[" INGESTION "]
         A[PDF Rapports Annuels / RSE] --> B[Extraction PyMuPDF<br/>page par page]
         B --> C[Nettoyage<br/>en-têtes/pieds répétés]
         C --> D[Chunking structurel<br/>sections + pages + overlap]
@@ -66,7 +66,7 @@ flowchart TD
         E --> H[(Index BM25<br/>persisté)]
     end
 
-    subgraph Q["🔎 REQUÊTE (en ligne)"]
+    subgraph Q["REQUÊTE"]
         U[Question utilisateur] --> QA[Analyse déterministe<br/>années · intention · thème · type]
         QA --> MF[Filtrage metadata<br/>year / document_type]
         MF --> VS[Recherche vectorielle]
@@ -111,9 +111,7 @@ chaque exercice demandé dispose de sa part du contexte.
 | Lexical | **rank-bm25** | Complément indispensable pour chiffres/acronymes/années |
 | API | **FastAPI** + Uvicorn | Typage Pydantic, OpenAPI auto |
 | UI | **Streamlit** | Démonstration rapide et lisible |
-| Config | **pydantic-settings** | Configuration typée, 100 % pilotée par `.env` |
 | Fiabilité | **tenacity** | Retries bornés avec backoff exponentiel |
-| Tests | **pytest** | 108 tests, 100 % hors ligne |
 
 ---
 
@@ -132,11 +130,9 @@ tanger-med-rag/
 ├── data/
 │   ├── annual_reports/   # Rapports annuels (PDF)
 │   └── rse_reports/      # Rapports RSE (PDF)
-├── data_sources/         # Transcription des extraits 2025 (obsolète, voir §9)
 ├── evaluation/           # questions.json + evaluate.py
-├── scripts/              # check_openrouter.py · build_sample_data.py
-├── tests/                # 108 tests (ingestion, retrieval, rag, api)
-├── vectorstore/          # ChromaDB + index BM25 (généré)
+├── scripts/              # check_openrouter.py 
+├── vectorstore/          # ChromaDB + index BM25 
 ├── streamlit_app.py
 ├── requirements.txt
 └── .env.example
@@ -167,27 +163,14 @@ OPENROUTER_EMBEDDING_MODEL=openai/text-embedding-3-large
 OPENROUTER_EMBEDDING_DIM=3072
 ```
 
-> 🔐 La clé n'est **jamais** en dur dans le code : elle est lue exclusivement
-> depuis l'environnement. `.env` est ignoré par git.
 
-**Vérifiez la connectivité réelle avant toute ingestion :**
+
 
 ```bash
 python scripts/check_openrouter.py
 ```
 
-Ce script effectue **deux vrais appels API** (un chat, un embedding) et indique
-précisément ce qui fonctionne.
 
-> ⚠️ **Note sur les embeddings** : OpenRouter route principalement des modèles de
-> *chat*. Si l'endpoint `/embeddings` renvoie une erreur 400/404, basculez les
-> embeddings vers un fournisseur compatible OpenAI **sans modifier une ligne de
-> code**, via deux variables :
-> ```env
-> EMBEDDINGS_BASE_URL=https://api.openai.com/v1
-> EMBEDDINGS_API_KEY=sk-...
-> ```
-> Le script de diagnostic vous le dira explicitement.
 
 ## 9. Ajout des rapports
 
@@ -199,11 +182,6 @@ data/annual_reports/   →  rapport_annuel_2024.pdf, ...
 data/rse_reports/      →  rapport_rse_2024.pdf, ...
 ```
 
-**Seule contrainte** : le nom de fichier doit contenir l'année sur 4 chiffres
-(elle sert de métadonnée de filtrage). Le système détecte et corrige
-automatiquement un document mal classé (un rapport RSE déposé dans
-`annual_reports/` est reclassé d'après son nom) et ignore les doublons
-strictement identiques.
 
 Le corpus actuellement indexé — les six PDF officiels complets, **2 526 chunks** :
 
@@ -216,29 +194,7 @@ Le corpus actuellement indexé — les six PDF officiels complets, **2 526 chunk
 | Rapport RSE 2024 | 99 | 391 |
 | Rapport RSE 2025 | 116 | 453 |
 
-> ⚠️ **Remplacer un PDF déjà indexé.** Gardez le même nom de fichier : le
-> manifeste détecte le changement de hash, les anciens chunks sont supprimés et
-> seul ce document est réindexé. Si vous changez le nom, les chunks de l'ancien
-> fichier restent orphelins dans ChromaDB — purgez-les avec
-> `VectorStore.delete_by_source_file("<ancien-nom>.pdf")` et retirez son entrée du
-> manifeste, ou reconstruisez tout avec `--force`.
 
-> `scripts/build_sample_data.py` et `data_sources/` ne servaient qu'à matérialiser
-> les extraits 2025 fournis avec le brief, avant que les PDF officiels ne soient
-> disponibles. Ne relancez pas ce script : il réintroduirait des rapports 2025
-> partiels **à côté** des complets, avec des noms de fichiers différents — donc un
-> corpus 2025 dédoublé.
-
-## 10. Ingestion
-
-```bash
-python -m app.ingestion           # incrémental (ignore les fichiers inchangés)
-python -m app.ingestion --force   # reconstruction complète de l'index
-```
-
-L'ingestion maintient un manifeste (`vectorstore/ingestion_manifest.json`) basé
-sur le hash SHA-256 de chaque PDF : relancer la commande ne re-facture pas
-d'embeddings pour les documents inchangés.
 
 ## 11. Lancement du backend
 
@@ -265,12 +221,8 @@ curl -X POST http://localhost:8000/api/query \
 streamlit run streamlit_app.py
 ```
 
-L'UI permet de filtrer par année et par type de rapport, d'afficher les extraits
-sources, et d'activer un panneau **Debug / Retrieval** (scores, temps par étape,
-analyse de la question).
 
-> L'UI et l'API consomment **la même classe de service** `RAGPipeline` : aucune
-> logique métier n'est dupliquée, les deux front-ends ne peuvent pas diverger.
+
 
 ---
 
@@ -321,29 +273,6 @@ Les deux composantes sont normalisées dans `[0,1]` :
 > rapport avec le corpus* — ce qui rend tout seuil d'abstention inopérant. La
 > transformation saturante conserve l'information de magnitude absolue.
 
-### Pas d'étape de reranking
-
-Le classement retenu est celui de la fusion hybride. Il n'y a **pas** de
-reranker, et c'est un choix assumé plutôt qu'un oubli.
-
-Un reranker utile est un cross-encoder : il lit la paire (question, passage)
-ensemble et la note, là où la recherche vectorielle compare deux vecteurs
-calculés séparément. Il est nettement plus précis, mais il impose une
-dépendance lourde (PyTorch) et un téléchargement de modèle, et il doit tourner
-une fois par candidat à chaque question.
-
-Surtout, il ne rapporte vraiment que lorsqu'on récupère beaucoup de candidats
-pour n'en garder que quelques-uns. Ici `TOP_K=8` par voie, soit au plus
-16 candidats après déduplication, pour `FINAL_CONTEXT_K=5` : la marge de
-réordonnancement est trop faible pour justifier ce coût.
-
-Une version précédente exposait une interface `Reranker` et une implémentation
-qui se contentait de trier sur le score déjà calculé — donc sans aucun effet sur
-l'ordre ni sur la sélection. Elle a été supprimée : une abstraction qui simule
-une étape inexistante est plus trompeuse qu'utile. Pour en ajouter un vrai :
-monter `TOP_K` à 25-30, noter les candidats dans `HybridRetriever.search()`
-après `_fuse()`, et mesurer avec `evaluation/evaluate.py` si `retrieval_hit`
-progresse réellement.
 
 ---
 
@@ -371,22 +300,6 @@ sémantique distingue le hors-sujet.**
 les années, de recalculer un chiffre, obligation de citer et de signaler
 explicitement toute information manquante.
 
-## 16. Citations
-
-Chaque réponse renvoie, pour chaque source : document, type, **année**, **page(s)**,
-section, score de pertinence, extrait consultable et URL officielle.
-
-```json
-{
-  "document": "Rapport Annuel 2025",
-  "year": 2025,
-  "page": "p. 9",
-  "section": "NOS CHIFFRES CLEFS",
-  "relevance_score": 0.83,
-  "excerpt": "209 MT de marchandises traitées...",
-  "source_url": "https://www.tangermed.ma/fr/documentation/"
-}
-```
 
 ## 17. Évaluation
 
@@ -424,58 +337,13 @@ Mots-clés attendus   : 10/10 (100%)
 Fidélité numérique   : 11/15  (73%)
 ```
 
-> Deux évolutions rendent ce relevé obsolète, dans le bon sens. Les écarts de
-> fidélité numérique venaient de nombres voisins recollés par l'extraction PDF
-> (« 2025 63% » lu comme `202563`), corrigés depuis dans la détection de nombres
-> de l'évaluateur. Et le corpus compte désormais **2 526 chunks** : les rapports
-> 2025 officiels complets ont remplacé leurs versions partielles. Relancez la
-> commande pour un relevé à jour.
+
 
 **Intégration RAGAS** : l'export `--output` produit pour chaque question
 `question` / `answer` / `contexts` / `sources`, qui correspond exactement au
 schéma d'entrée attendu par RAGAS pour des métriques jugées par LLM.
 
-## 18. Tests
 
-```bash
-pytest tests/ -q          # 108 tests, ~5s, aucun appel réseau
-```
-
-| Fichier | Couverture |
-|---|---|
-| `test_ingestion.py` | Année, type de document mal classé, boilerplate, chunking, pages, métadonnées |
-| `test_retrieval.py` | BM25 (filtres, normalisation absolue), ChromaDB réel, fusion hybride |
-| `test_rag.py` | Analyse de requête, prompts, abstention (2 garde-fous), multi-années, citations |
-| `test_api.py` | Contrats HTTP, validation, mapping d'erreurs (502/500 sans fuite de détails) |
-
----
-
-## 19. Limites connues
-
-- **Tableaux** : le texte des tableaux est extrait en flux, sans structure
-  ligne/colonne. Les questions nécessitant un **calcul exact** sur un tableau
-  doivent être traitées par une extraction structurée (voir §20).
-- **PDF scannés** : aucun OCR — les documents doivent contenir une couche texte.
-- **Reranking** : aucun. Le classement est celui de la fusion hybride (voir §14).
-- **Seuils** : `RELEVANCE_THRESHOLD` et `MIN_SEMANTIC_SCORE` sont calibrés pour ce
-  corpus et ce modèle d'embeddings ; ils doivent être recalibrés via
-  `evaluation/evaluate.py` en cas de changement.
-- **Couverture** : le corpus se limite aux Rapports Annuels et RSE 2023 à 2025.
-  Toute question portant sur une autre année ou un autre document donne — et doit
-  donner — une abstention.
-
-## 20. Améliorations futures
-
-1. **Extraction structurée des tableaux** → DataFrame/SQL pour les calculs exacts
-   (Text-to-SQL sur les indicateurs), l'architecture est prête à l'accueillir.
-2. **Reranking par cross-encoder**, après avoir élargi `TOP_K`, avec mesure
-   avant/après du `retrieval_hit` (voir §14).
-3. **Cache sémantique** des questions fréquentes (réduction coût/latence).
-4. **Réponses en streaming** dans l'UI.
-5. **Évaluation continue** en CI sur chaque modification de prompt ou de seuil.
-6. **Support multilingue** (requêtes en anglais / arabe sur corpus français).
-
----
 
 ## Récapitulatif des commandes
 
@@ -484,7 +352,6 @@ pip install -r requirements.txt        # installation
 python scripts/check_openrouter.py     # vérifier la clé et les modèles
 python -m app.ingestion --force        # indexer les rapports
 streamlit run streamlit_app.py         # interface (http://localhost:8501)
-uvicorn app.api.app:app --port 8000    # API (http://localhost:8000/docs)
-pytest tests/ -q                       # tests
+
 python evaluation/evaluate.py          # évaluation
 ```
