@@ -1,0 +1,37 @@
+
+openai>=1.40.0
+
+# --- PDF processing ---
+pymupdf>=1.24.0
+
+# --- Vector database ---
+chromadb>=0.5.0
+
+# --- Lexical / hybrid search ---
+rank-bm25>=0.2.2
+
+# --- API ---
+fastapi>=0.111.0
+uvicorn[standard]>=0.30.0
+
+# --- UI ---
+streamlit>=1.36.0
+
+# --- Config / validation ---
+pydantic>=2.7.0
+pydantic-settings>=2.3.0
+python-dotenv>=1.0.1
+
+# --- Reliability ---
+tenacity>=8.3.0
+
+# --- Utilities ---
+numpy>=1.26.0
+tiktoken>=0.7.0
+
+# --- Testing ---
+pytest>=8.2.0
+pytest-mock>=3.14.0
+
+# --- Sample data generation (used only by scripts/build_sample_data.py) ---
+reportlab>=4.2.0

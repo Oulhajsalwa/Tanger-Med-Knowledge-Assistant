@@ -1,0 +1,180 @@
+{
+  "description": "Jeu d'évaluation du Tanger Med Knowledge Assistant. Les attentes portent sur le corpus réellement ingéré (rapports annuels et RSE 2023, 2024, 2025). 'expected_keywords' liste des éléments qui doivent apparaître dans la réponse OU dans le contexte récupéré ; aucune donnée n'y est inventée : chaque valeur provient des rapports.",
+  "questions": [
+    {
+      "id": "fact_001",
+      "category": "factual",
+      "question": "Quel a été le tonnage global de marchandises traité par le Groupe Tanger Med en 2025 ?",
+      "expected_years": [2025],
+      "expected_document_type": null,
+      "expected_keywords": ["209"],
+      "should_abstain": false
+    },
+    {
+      "id": "fact_002",
+      "category": "factual",
+      "question": "Quel est le chiffre d'affaires consolidé du Groupe en 2025 et sa progression ?",
+      "expected_years": [2025],
+      "expected_document_type": "annual_report",
+      "expected_keywords": ["13 031", "16"],
+      "should_abstain": false
+    },
+    {
+      "id": "fact_003",
+      "category": "factual",
+      "question": "Combien de conteneurs EVP le complexe portuaire Tanger Med a-t-il manutentionnés en 2025 ?",
+      "expected_years": [2025],
+      "expected_document_type": null,
+      "expected_keywords": ["11", "EVP"],
+      "should_abstain": false
+    },
+    {
+      "id": "fact_004",
+      "category": "factual",
+      "question": "Quelle est la part de femmes managers au sein du Groupe en 2025 ?",
+      "expected_years": [2025],
+      "expected_document_type": "rse_report",
+      "expected_keywords": ["21"],
+      "should_abstain": false
+    },
+    {
+      "id": "fact_005",
+      "category": "factual",
+      "question": "Quelle est la capacité annuelle du centre de tri et de valorisation des déchets industriels ?",
+      "expected_years": [2025],
+      "expected_document_type": null,
+      "expected_keywords": ["29 000"],
+      "should_abstain": false
+    },
+    {
+      "id": "topic_001",
+      "category": "topic",
+      "question": "Quelles sont les principales actions environnementales et de décarbonation menées par Tanger Med ?",
+      "expected_years": [],
+      "expected_document_type": null,
+      "expected_keywords": ["carbone", "2030"],
+      "should_abstain": false
+    },
+    {
+      "id": "topic_002",
+      "category": "topic",
+      "question": "Comment est organisée la gouvernance RSE du Groupe Tanger Med ?",
+      "expected_years": [],
+      "expected_document_type": "rse_report",
+      "expected_keywords": ["RSE"],
+      "should_abstain": false
+    },
+    {
+      "id": "topic_003",
+      "category": "topic",
+      "question": "Quelles actions la Fondation Tanger Med mène-t-elle auprès des communautés locales ?",
+      "expected_years": [],
+      "expected_document_type": null,
+      "expected_keywords": ["Fondation"],
+      "should_abstain": false
+    },
+    {
+      "id": "topic_004",
+      "category": "topic",
+      "question": "Quels dispositifs de sécurité des systèmes d'information sont en place ?",
+      "expected_years": [],
+      "expected_document_type": null,
+      "expected_keywords": ["27001"],
+      "should_abstain": false
+    },
+    {
+      "id": "temporal_001",
+      "category": "temporal",
+      "question": "Quels étaient les principaux indicateurs du Groupe en 2023 ?",
+      "expected_years": [2023],
+      "expected_document_type": null,
+      "expected_keywords": [],
+      "should_abstain": false
+    },
+    {
+      "id": "temporal_002",
+      "category": "temporal",
+      "question": "Quelles étaient les réalisations RSE du Groupe en 2024 ?",
+      "expected_years": [2024],
+      "expected_document_type": "rse_report",
+      "expected_keywords": [],
+      "should_abstain": false
+    },
+    {
+      "id": "comparison_001",
+      "category": "comparison",
+      "question": "Comparez le chiffre d'affaires du Groupe entre 2024 et 2025.",
+      "expected_years": [2024, 2025],
+      "expected_document_type": "annual_report",
+      "expected_keywords": ["13 031"],
+      "should_abstain": false
+    },
+    {
+      "id": "comparison_002",
+      "category": "comparison",
+      "question": "Comparez la part de femmes managers entre 2023 et 2025.",
+      "expected_years": [2023, 2025],
+      "expected_document_type": "rse_report",
+      "expected_keywords": [],
+      "should_abstain": false
+    },
+    {
+      "id": "evolution_001",
+      "category": "evolution",
+      "question": "Comment le trafic du complexe portuaire a-t-il évolué entre 2023 et 2025 ?",
+      "expected_years": [2023, 2024, 2025],
+      "expected_document_type": null,
+      "expected_keywords": [],
+      "should_abstain": false
+    },
+    {
+      "id": "evolution_002",
+      "category": "evolution",
+      "question": "Quelle a été l'évolution des engagements environnementaux du Groupe entre 2023 et 2025 ?",
+      "expected_years": [2023, 2024, 2025],
+      "expected_document_type": null,
+      "expected_keywords": [],
+      "should_abstain": false
+    },
+    {
+      "id": "abstention_001",
+      "category": "out_of_corpus",
+      "question": "Quel était le chiffre d'affaires de Tanger Med en 2030 ?",
+      "expected_years": [],
+      "expected_document_type": null,
+      "expected_keywords": [],
+      "should_abstain": true,
+      "notes": "Année postérieure au corpus : le système doit refuser de répondre."
+    },
+    {
+      "id": "abstention_002",
+      "category": "out_of_corpus",
+      "question": "Quel était le trafic du port de Tanger Med en 2010 ?",
+      "expected_years": [],
+      "expected_document_type": null,
+      "expected_keywords": [],
+      "should_abstain": true,
+      "notes": "Année antérieure au corpus ingéré (2023-2025)."
+    },
+    {
+      "id": "abstention_003",
+      "category": "out_of_corpus",
+      "question": "Quel est le cours de l'action Apple aujourd'hui ?",
+      "expected_years": [],
+      "expected_document_type": null,
+      "expected_keywords": [],
+      "should_abstain": true,
+      "notes": "Sujet totalement hors corpus documentaire."
+    },
+    {
+      "id": "abstention_004",
+      "category": "out_of_corpus",
+      "question": "Quelle est la recette traditionnelle du couscous marocain ?",
+      "expected_years": [],
+      "expected_document_type": null,
+      "expected_keywords": [],
+      "should_abstain": true,
+      "notes": "Question hors domaine : ne doit jamais être répondue avec des connaissances générales."
+    }
+  ]
+}

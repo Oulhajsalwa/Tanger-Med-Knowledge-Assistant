@@ -1,0 +1,46 @@
+# Environment / secrets
+.env
+*.env.local
+
+# Claude/AI Assistant
+.claude/
+*.claude
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+env/
+ENV/
+
+# Vector store persisted data (rebuildable via ingestion)
+vectorstore/*
+!vectorstore/.gitkeep
+
+# Logs
+*.log
+logs/
+
+# Test / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Large source PDFs are legitimate project data but can be excluded from VCS
+# if you prefer not to version binary files. Uncomment if desired:
+# data/annual_reports/*.pdf
+# data/rse_reports/*.pdf
