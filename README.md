@@ -339,9 +339,7 @@ Fidélité numérique   : 11/15  (73%)
 
 
 
-**Intégration RAGAS** : l'export `--output` produit pour chaque question
-`question` / `answer` / `contexts` / `sources`, qui correspond exactement au
-schéma d'entrée attendu par RAGAS pour des métriques jugées par LLM.
+
 
 
 
